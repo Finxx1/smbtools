@@ -25,7 +25,7 @@ for i in range(objs):
     try:
         ci = image.crop(cropsize)
         ci = ci.rotate(rotation * (180.0/3.14159265), expand=True)
-        ci.save(str(i) + ".png")
+        ci.save(str(i + 1) + ".png")
     except:
         continue
     
