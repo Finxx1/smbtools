@@ -1,0 +1,15 @@
+Shouldn't need to know any more about TP files:
+
+4 bytes - file count
+
+per file:
+  4 bytes - offset in archive
+  4 bytes - file size
+  9 bytes - useless (I think)
+
+after header:
+  per file:
+    N bytes - file data
+
+tid-bits:
++ .DAT files seem to be a modification of this format, adding a listing of file paths.

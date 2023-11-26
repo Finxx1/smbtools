@@ -1,0 +1,11 @@
+What we know about .AM files so far:
+
+4 bytes - ascii "101F"
+2 bytes - len of symbol listing
+4 bytes - symbol count
+2 bytes - 0xF0 0x41
+4 bytes - frames (I think)
+null-delimited array of ascii strings
+
+tid-bits:
++ AM indexes clips (or symbols) and uses the index in the file, so swapping names around DOES change the symbol it refers to.

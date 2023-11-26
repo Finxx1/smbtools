@@ -1,0 +1,12 @@
+Fully documented:
+
+repeats until end of file:
+  float32 x1
+  float32 y1
+  float32 x2
+  float32 y2
+  float32 rotation (in rads, not degs)
+
+tid-bits:
++ Represents the bounding of clips in the TP files
++ You can find the amount of symbols this file has the bounding of by taking the file length and dividing it by 20.
