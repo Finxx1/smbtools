@@ -1,0 +1,28 @@
+assume packing of 1
+
+struct dat_header {
+	uint32_t directory_count;
+	dat_dir_header directory_headers[directory_count];
+	
+	uint32_t file_count;
+	dat_file_header file_headers[file_count];
+	
+	uint32_t dirname_size_bytes;
+	uint32_t filename_size_bytes;
+	uint8_t dirname_data[dirname_size_bytes]; // SEE FOOTNOTE [1]
+	uint8_t filename_data[filename_size_bytes]; // SEE FOOTNOTE [1]
+}
+
+struct dat_dir_header {
+	uint32_t id; // Seems to just count up from 0.
+	uint32_t file_count;
+}
+
+struct dat_file_header {
+	uint32_t offset;
+	uint32_t size;
+	uint32_t dir;
+}
+
+[1]: dirname_data and filename_data are a list of NULL-terminated ANSI strings.
+For instance, a list of strings "a1", "b2", and "c33" would be "a1\0b2\0c33\0".
