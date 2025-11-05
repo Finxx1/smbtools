@@ -11,11 +11,14 @@ file.close()
 
 image = Image.open(sys.argv[2])
 
+sig = struct.unpack('i', filedata[0:4])
 itxs = struct.unpack('f' * int(len(filedata) / 4), filedata)
 
 w = image.width
 h = image.height
 
+if sig[0] == 0x49583031:
+    itxs = itxs[1:]
 
 objs = int(len(itxs) / 5)
 

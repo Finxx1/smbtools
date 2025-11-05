@@ -1,5 +1,7 @@
 Fully documented:
 
+ITX files have an optional file signature of 0x49583031. If present, it should be skipped.
+
 repeats until end of file:
   float32 x1
   float32 y1
@@ -9,4 +11,3 @@ repeats until end of file:
 
 tid-bits:
 + Represents the bounding of clips in the TP files
-+ You can find the amount of symbols this file has the bounding of by taking the file length and dividing it by 20.
