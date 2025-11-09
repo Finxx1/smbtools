@@ -1,11 +1,65 @@
 What we know about .AM files so far:
 
-4 bytes - ascii "101F"
-2 bytes - len of symbol listing
-4 bytes - symbol count
-2 bytes - 0xF0 0x41
-4 bytes - frames (I think)
-null-delimited array of ascii strings
+there are two types of AM files, signed ones and unsigned ones
+signed ones have the 4-byte signature at the start, among other extra data that
+unsigned files don't.
+
+general layout:
+file header
+string table
+series of symbol list entries
+
+signed header:
+char[4] - ascii "101F" or "001F"
+uint16 - len of string table
+uint32 - symbol count
+uint16 - 0xF0 0x41
+uint32 - ftex count
+
+unsigned header:
+uint16 - len of string table
+uint32 - symbol count
+uint16 - 0xF0 0x41
+
+symbol list entry:
+uint32 - [1]
+float32 - ignored
+float32 - ignored
+uint32[] - unknown (one uint32 per layer)
+layer[] - series of layers
+
+[1]: number of layers, shifted left once, ANDed with a bit that determines if it loops or not.
+
+layer:
+uint32 - unknown (zero)
+uint32 - keyframe count
+float32 - duration of symbol timeline in seconds
+char[12] - 0xFF x12 (signed files only)
+keyframe[] - series of keyframes (56 bytes big)
+
+keyframe:
+uint32 - texture id
+float32 - x position
+float32 - y position
+float32 - x scale
+float32 - y scale
+float32 - x skew
+float32 - y skew
+float32 - x offset
+float32 - y offset
+rgba - color tinting
+uint32 - unknown (zero)
+
+rgba:
+int16 - red value
+int16 - red intensity
+int16 - green value
+int16 - green intensity
+int16 - blue value
+int16 - blue intensity
+int16 - alpha value
+int16 - alpha intensity
 
 tid-bits:
 + AM indexes clips (or symbols) and uses the index in the file, so swapping names around DOES change the symbol it refers to.
++ If a type is specified for an unknown, it was probably found through Ghidra, or because of sensible values throughout several test files.
