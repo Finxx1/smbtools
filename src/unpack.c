@@ -54,13 +54,13 @@
  *   u g o
  * r ! ! !
  * w ! . .
- * e . . .
+ * e ! ! !
  *
  * open this website for an interactive interface:
- * https://chmodcommand.com/chmod-644/
+ * https://chmodcommand.com/chmod-744/
  *
  */
-#define CreateDirectoryA(path, sec_desc) mkdir(path, 0644)
+#define CreateDirectoryA(path, sec_desc) mkdir(path, 0755)
 #endif
 
 /* NOTE: this code is seemingly compatible with Windows and Linux, according to
@@ -183,7 +183,7 @@ int parse_dat(FILE* fp, const char *output_path) {
 		strcat(path, files[i].name);
 		FILE* outfp = fopen(path, "wb");
 		if (outfp == NULL) {
-			printf("File creation error: %s\n", get_error_str());
+			printf("File creation error \"%s\": %s\n", path, get_error_str());
 			return 1;
 		}
 		
