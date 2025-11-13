@@ -68,7 +68,7 @@ bool create_directory(const char *path) {
  *
  */
 bool create_directory(const char *path) {
-	return mkdir(path, 0755) > 0;
+	return mkdir(path, 0755) >= 0;
 }
 
 #endif
@@ -175,10 +175,7 @@ int parse_dat(FILE* fp, const char *output_path) {
 	// only for the .dat to later be corrupt or have an unexpected EOF.
 
 	
-	if (!create_directory(output_path)) {
-		printf("Failed to create output path\n");
-		return 1;
-	}
+	create_directory(output_path);
 
 	for (size_t i = 0; i < num_dirs; i++) {
 		char path[UNPACK_MAX_PATH];
@@ -186,7 +183,7 @@ int parse_dat(FILE* fp, const char *output_path) {
 		strcpy(path, output_path);
 		strcat(path, PATH_DELIM_STR);
 		strcat(path, dirs[i].name);
-		if (!create_directory(output_path)) {
+		if (!create_directory(path)) {
 			printf("Failed to subdirectory \"%s\"\n", path);
 			return 1;
 		}
