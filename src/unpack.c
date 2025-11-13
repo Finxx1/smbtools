@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 /*
  * NOTES:
@@ -28,10 +29,16 @@
 
 #define UNPACK_MAX_PATH 4096
 
+// returns false on failure and vice versa
+bool create_directory(const char *path);
+
 #ifdef _WIN32
 #include <windows.h>
 #define PATH_DELIM '\\'
 #define PATH_DELIM_STR "\\"
+bool create_directory(const char *path) {
+	return CreateDirectoryA(path, NULL) == 0;
+}
 #else
 #include <sys/stat.h>
 #define PATH_DELIM '/'
@@ -60,7 +67,10 @@
  * https://chmodcommand.com/chmod-744/
  *
  */
-#define CreateDirectoryA(path, sec_desc) mkdir(path, 0755)
+bool create_directory(const char *path) {
+	return mkdir(path, 0755) > 0;
+}
+
 #endif
 
 /* NOTE: this code is seemingly compatible with Windows and Linux, according to
@@ -165,14 +175,21 @@ int parse_dat(FILE* fp, const char *output_path) {
 	// only for the .dat to later be corrupt or have an unexpected EOF.
 
 	
-	CreateDirectoryA(output_path, NULL);
+	if (!create_directory(output_path)) {
+		printf("Failed to create output path\n");
+		return 1;
+	}
+
 	for (size_t i = 0; i < num_dirs; i++) {
 		char path[UNPACK_MAX_PATH];
 
 		strcpy(path, output_path);
 		strcat(path, PATH_DELIM_STR);
 		strcat(path, dirs[i].name);
-		CreateDirectoryA(path, NULL);
+		if (!create_directory(output_path)) {
+			printf("Failed to subdirectory \"%s\"\n", path);
+			return 1;
+		}
 	}
 	
 	for (size_t i = 0; i < num_files; i++) {
