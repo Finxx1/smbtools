@@ -1,7 +1,10 @@
+#include <errno.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 /*
  * NOTES:
@@ -20,13 +23,63 @@
  * READING INVALID VALUES.
  *
  * This tool was written by Finxx (finxx.xyz) for smbtools.
+ * Improvements and some posix support by AllMeatball.
  */
+
+
+#define UNPACK_MAX_PATH 4096
+
+// returns false on failure and vice versa
+bool create_directory(const char *path);
 
 #ifdef _WIN32
 #include <windows.h>
+#define PATH_DELIM '\\'
+#define PATH_DELIM_STR "\\"
+bool create_directory(const char *path) {
+	return CreateDirectoryA(path, NULL) == 0;
+}
 #else
-#error TODO: Implement CreateDirectoryA on POSIX
+#include <sys/stat.h>
+#define PATH_DELIM '/'
+#define PATH_DELIM_STR "/"
+
+/*
+ * NOTE: 0 prepended before the mode number to make it an octal.
+ * this is the eaiest to understand numerical representation.
+ *
+ * the bitflags are set as the following:
+ *
+ * Read (4)
+ * Write (2)
+ * Execute (1)
+ *
+ * Owner Rights  (u)
+ * Group Rights  (g)
+ * Others Rights (o)
+ *
+ *   u g o
+ * r ! ! !
+ * w ! . .
+ * e ! ! !
+ *
+ * open this website for an interactive interface:
+ * https://chmodcommand.com/chmod-744/
+ *
+ */
+bool create_directory(const char *path) {
+	return mkdir(path, 0755) >= 0;
+}
+
 #endif
+
+/* NOTE: this code is seemingly compatible with Windows and Linux, according to
+ * the windows documentation seen at:
+ * https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/fopen-wfopen
+ */
+const char *get_error_str() {
+	return strerror(errno);
+}
 
 typedef struct {
 	char* name;
@@ -39,6 +92,20 @@ typedef struct {
 	uint32_t size;
 	uint32_t dir;
 } file;
+
+const char *get_basename(const char *path) {
+	const char *filename = strrchr(path, PATH_DELIM);
+	if (filename) {
+		// remove prepending delimeter, if string is not empty
+		if (strlen(filename) > 0)
+			filename++;
+
+	} else {
+		filename = "[null path]";
+	}
+
+	return filename;
+}
 
 uint32_t read_u32(FILE* fp) {
 	uint32_t r = 0;
@@ -65,7 +132,12 @@ void* xmalloc(size_t amnt) {
 	return r;
 }
 
-int parse_dat(FILE* fp) {
+int parse_dat(FILE* fp, const char *output_path) {
+	if (output_path == NULL)
+		output_path = "data";
+
+	printf("Selected output dir: %s\n", output_path);
+
 	uint32_t num_dirs = read_u32(fp);
 	directory* dirs = xmalloc(num_dirs * sizeof(directory));
 	for (size_t i = 0; i < num_dirs; i++) {
@@ -101,22 +173,31 @@ int parse_dat(FILE* fp) {
 	
 	// We do this separately from parsing so we don't extract half of the files
 	// only for the .dat to later be corrupt or have an unexpected EOF.
+
 	
-	CreateDirectoryA("data", NULL);
+	create_directory(output_path);
+
 	for (size_t i = 0; i < num_dirs; i++) {
-		char path[256];
-		strcpy(path, "data/");
+		char path[UNPACK_MAX_PATH];
+
+		strcpy(path, output_path);
+		strcat(path, PATH_DELIM_STR);
 		strcat(path, dirs[i].name);
-		CreateDirectoryA(path, NULL);
+		if (!create_directory(path)) {
+			printf("Failed to subdirectory \"%s\"\n", path);
+			return 1;
+		}
 	}
 	
 	for (size_t i = 0; i < num_files; i++) {
-		char path[256];
-		strcpy(path, "data/");
+		char path[UNPACK_MAX_PATH];
+
+		strcpy(path, output_path);
+		strcat(path, PATH_DELIM_STR);
 		strcat(path, files[i].name);
 		FILE* outfp = fopen(path, "wb");
 		if (outfp == NULL) {
-			printf("File creation error.");
+			printf("File creation error \"%s\": %s\n", path, get_error_str());
 			return 1;
 		}
 		
@@ -133,16 +214,23 @@ int parse_dat(FILE* fp) {
 }
 
 int main(int argc, char** argv) {
+	const char *archive_path = NULL;
+	const char *output_path = NULL;
+
 	if (argc < 2) {
-		printf("Missing file.");
+		printf("unpack [.dat file] (output path)\n");
 		return 1;
 	}
+
+	if (argc >= 3)
+		output_path = argv[2];
 	
-	FILE* fp = fopen(argv[1], "rb");
+	archive_path = argv[1];
+	FILE* fp = fopen(archive_path, "rb");
 	if (fp == NULL) {
-		printf("Invalid file.");
+		printf("Failed to open archive \"%s\": %s\n", get_basename(archive_path), get_error_str());
 		return 1;
 	}
 	
-	return parse_dat(fp);
+	return parse_dat(fp, output_path);
 }
