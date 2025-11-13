@@ -22,7 +22,7 @@
  * READING INVALID VALUES.
  *
  * This tool was written by Finxx (finxx.xyz) for smbtools.
- * Improvements and some posix by AllMeatball.
+ * Improvements and some posix support by AllMeatball.
  */
 
 
@@ -38,11 +38,10 @@
 #define PATH_DELIM_STR "/"
 
 /*
- * NOTE: 0 is needed before the number to make it an octal
- * which is the docmented way to represent file modes.
+ * NOTE: 0 prepended before the mode number to make it an octal.
+ * this is the eaiest to understand numerical representation.
  *
- * in this case I am using this mode (0644)
- * which set the bitflags as the following:
+ * the bitflags are set as the following:
  *
  * Read (4)
  * Write (2)
@@ -57,14 +56,17 @@
  * w ! . .
  * e . . .
  *
+ * open this website for an interactive interface:
+ * https://chmodcommand.com/chmod-644/
  *
  */
 #define CreateDirectoryA(path, sec_desc) mkdir(path, 0644)
 #endif
 
-// NOTE: this code is seemingly compatible with Windows and Linux, according to
-// the windows documentation seen at:
-// https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/fopen-wfopen
+/* NOTE: this code is seemingly compatible with Windows and Linux, according to
+ * the windows documentation seen at:
+ * https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/fopen-wfopen
+ */
 const char *get_error_str() {
 	return strerror(errno);
 }
