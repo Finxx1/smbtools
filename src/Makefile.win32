@@ -1,0 +1,18 @@
+# This is an NMAKE compatible makefile. To use:
+#   nmake /f Makefile.win32 
+# Should be compatible with the POSIX makefile
+#
+
+OBJ = \
+	unpack.obj \
+
+CFLAGS = /nologo /O2
+BUILD_DIR = ../build
+
+unpack: $(OBJ)
+	cl $(OBJ) $(CFLAGS) /link /OUT:"$(BUILD_DIR)/unpack.exe"
+
+all: unpack
+
+clean:
+	-del $(OBJ)

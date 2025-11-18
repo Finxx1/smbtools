@@ -218,7 +218,7 @@ int main(int argc, char** argv) {
 	const char *output_path = NULL;
 
 	if (argc < 2) {
-		printf("unpack [.dat file] (output path)\n");
+		printf("Usage: unpack [.dat file] (output path)\n");
 		return 1;
 	}
 
